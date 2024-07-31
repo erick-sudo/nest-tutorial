@@ -4,17 +4,23 @@ import {
   Delete,
   Get,
   Header,
-  HttpCode,
   HttpStatus,
   Param,
   Patch,
   Post,
   Query,
   Res,
+  UseFilters,
+  UsePipes,
 } from '@nestjs/common';
-import { CreateCatDto, UpdateCatDto, ListAllEntities } from './dto/create-cat.dto';
 import { Response } from 'express';
 import { CatsService } from './cats.service';
+import { HttpExceptionFilter } from 'src/filters/http.exception.filter';
+import { ToIntegerPipe } from 'src/pipes/to.integer.pipe';
+import { ListAllEntities } from './dto/cat.dto';
+import { CreateCatDto, UpdateCatDto, createCatSchema } from './dto/cat.schema';
+import { ZodValidationPipe } from 'src/pipes/zod.validation.pipe';
+import { ClassValidationPipe } from 'src/pipes/validation.pipe';
 
 @Controller('cats')
 export class CatsController {
@@ -38,12 +44,16 @@ export class CatsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.catsService.find(parseInt(id));
+  @UseFilters(HttpExceptionFilter)
+  findOne(
+    @Param('id', ToIntegerPipe)
+    id: number,
+  ) {
+    return this.catsService.find(id);
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateCatDto: UpdateCatDto) {
+  async update(@Param('id') id: number, @Body() updateCatDto: UpdateCatDto) {
     return {
       desc: `This action updates a #${id} cat`,
       updateCatDto,
@@ -51,7 +61,8 @@ export class CatsController {
   }
 
   @Post()
-  async create(@Body() createCatDto: CreateCatDto): Promise<any> {
+  // @UsePipes(new ZodValidationPipe(createCatSchema))
+  create(@Body(new ClassValidationPipe()) createCatDto: CreateCatDto) {
     return this.catsService.create(createCatDto);
   }
 

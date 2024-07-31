@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { Cat } from './interfaces/cat.interface';
-import { CreateCatDto } from './dto/create-cat.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CreateCatDto } from './dto/cat.schema';
+import { Cat } from './dto/cat.dto';
 
 @Injectable()
 export class CatsService {
@@ -20,6 +20,8 @@ export class CatsService {
   }
 
   find(id: number): Cat | null {
-    return this.cats.find((c) => c.id === id) || null;
+    const cat = this.cats.find((c) => c.id === id);
+    if (cat) return cat;
+    else throw new NotFoundException('Cat not found.');
   }
 }
