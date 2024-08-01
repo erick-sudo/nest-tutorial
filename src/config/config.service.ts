@@ -23,6 +23,10 @@ export class ConfigService {
     this.envConfig = dotenv.parse(fs.readFileSync(envFile));
   }
 
+  all(): Record<string, any> {
+    return this.envConfig;
+  }
+
   get(key: string): string {
     return this.envConfig[key];
   }
