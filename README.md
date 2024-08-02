@@ -71,3 +71,94 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+User {
+  id,
+  username
+}
+
+Participant {
+  user_id,
+  session_id
+}
+
+Question {
+  id,
+  text
+}
+
+
+Answer {
+  id,
+  question_id
+  text,
+}
+
+Session {
+  id,
+  question_id
+}
+
+Join table [Questions in the current session]
+SessionQuestion {
+  id,
+  session_id,
+  question_id
+}
+
+Matching an answer to the user(user_id) who gave an answer(answer_id) to a question (question_id) during a specific session(session_id). 
+MatchedAnswer {
+  id,
+  user_id, // User who matched an answer to a question
+  question_id,
+  answer_id,
+  session_id
+}
+
+Relationships
+1. Session to Question : Many to Many
+2. Answer to Question : One to One
+
+```js
+// Belongs to many sessions
+// Question
+{
+  id: 1,
+  text: "Text",
+}
+```
+
+```js
+// Session
+// Has many questions
+{
+  id: 1,
+  text: "Text",
+}
+```
+
+Session Questions
+```js
+// SessionQuestion
+// Belongs Question
+// Belongs Session
+{
+  id: 1,
+  text: "Text",
+  session_id: 1,
+  question_id: 2
+}
+```
+
+```js
+// MatchedAnswer
+{
+  id: 1,
+  user_id: 2
+  question_id: 2,
+  answer_id: 4,
+  session_id: 2
+}
+```
+
+

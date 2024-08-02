@@ -1,5 +1,6 @@
 import { IsInt, IsString } from 'class-validator';
 import { z } from 'zod';
+// import { PartialType } from "@nestjs/mapped-types"
 
 export const createCatSchema = z
   .object({
@@ -22,4 +23,5 @@ export class CreateCatDto {
   breed: string;
 }
 
-export interface UpdateCatDto extends CreateCatDto {}
+// export class UpdateCatDto extends PartialType(CreateCatDto) {}
+export class UpdateCatDto extends CreateCatDto {}

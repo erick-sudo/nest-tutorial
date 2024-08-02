@@ -9,6 +9,9 @@ import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import configurationYaml from './config/configuration.yaml';
 import * as Joi from 'joi';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { MongooseModule } from "@nestjs/mongoose"
+import { DataSource } from 'typeorm';
 // import { ConfigModule } from './config/config.module';
 
 @Module({
@@ -17,6 +20,19 @@ import * as Joi from 'joi';
     // ConfigModule.forRoot({
     //   envFilePath: ['.env', '.development.env'],
     // }),
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: 'localhost',
+      port: 3306,
+      username: 'mysql_user',
+      password: 'mysql_password',
+      database: 'mysql_database',
+      autoLoadEntities: true,
+      // Setting synchronize: true shouldn't be used in production
+      // - otherwise you can lose production data.
+      synchronize: true,
+    }),
+    MongooseModule.forRoot("mongodb://localhost:27018/nest_tutorial"),
     ConfigModule.forRoot({
       load: [configuration, configurationYaml],
       envFilePath: ['.env', '.development.env'],
@@ -45,4 +61,6 @@ export class AppModule {
   // configure(consumer: MiddlewareConsumer) {
   //   consumer.apply(logger, LoggerMiddleware).forRoutes(CatsController);
   // }
+
+  constructor(private dataSource: DataSource) {}
 }
