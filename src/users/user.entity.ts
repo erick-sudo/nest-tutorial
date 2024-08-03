@@ -1,7 +1,14 @@
 import { Exclude } from 'class-transformer';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { CreateUser } from './user.dtos';
 import * as bcrypt from 'bcrypt';
+import { ProfilePhoto } from './user.profile.photo.entity';
 
 @Entity()
 export class User {
@@ -23,6 +30,12 @@ export class User {
 
   @Column({ default: true })
   isActive: boolean;
+
+  @OneToOne(() => ProfilePhoto, (profilePhoto) => profilePhoto.user, {
+    cascade: true,
+  })
+  @JoinColumn()
+  profilePhoto: ProfilePhoto;
 
   static init({ firstName, lastName, password, email }: CreateUser): User {
     const newUser = new User();

@@ -1,22 +1,38 @@
 version: '3.8'
 
 services:
-  mysql_db:
+  postgres_db:
     build:
-      context: db/mysql
+      context: db/postgres
       dockerfile: Dockerfile
-    container_name: nest_tutorial_mysql_database
-    ports:
-      - "3306:3306"
+    container_name: nest_tutorial_postgres_database
     environment:
-      MYSQL_ROOT_PASSWORD: mysql_password
-      MYSQL_DATABASE: mysql_database
-      MYSQL_USER: mysql_user
-      MYSQL_PASSWORD: mysql_password
+      POSTGRES_USER: user_nest_tutorial
+      POSTGRES_PASSWORD: password_nest_tutorial
+      POSTGRES_DB: database_nest_tutorial
+    ports:
+      - "5433:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres-data:/var/lib/postgresql/data
     networks:
       - dev_nest_network
+
+  # mysql_db:
+  #   build:
+  #     context: db/mysql
+  #     dockerfile: Dockerfile
+  #   container_name: nest_tutorial_mysql_database
+  #   ports:
+  #     - "3306:3306"
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: mysql_password
+  #     MYSQL_DATABASE: mysql_database
+  #     MYSQL_USER: mysql_user
+  #     MYSQL_PASSWORD: mysql_password
+  #   volumes:
+  #     - mysql_data:/var/lib/mysql
+  #   networks:
+  #     - dev_nest_network
 
   mongo_db:
     build:
@@ -35,6 +51,12 @@ networks:
   dev_nest_network: {}
 
 volumes:
+  postgres-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./db/data/postgres
   mysql_data:
     driver: local
     driver_opts:

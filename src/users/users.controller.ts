@@ -15,6 +15,7 @@ import {
 import { UsersService } from './users.service';
 import { CreateUser } from './user.dtos';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { MagicNumberFileTypeValidator } from 'src/validators/magicnumber.filetype.validator';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -36,7 +37,7 @@ export class UsersController {
     return this.usersService.createOne(createUser);
   }
 
-  @Post('upload/profile_photo')
+  @Post(':id/upload/profile_photo')
   @UseInterceptors(FileInterceptor('profile_photo'))
   uploadPhoto(
     @UploadedFile(
@@ -45,19 +46,20 @@ export class UsersController {
           maxSize: 1048576,
           message: 'required photo size is at most 1mb',
         })
-        .addFileTypeValidator({ fileType: 'jpeg' })
         .build({
           errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
           fileIsRequired: true,
         }),
+      new MagicNumberFileTypeValidator('jpeg', 'png'),
     )
     profilePhoto: Express.Multer.File,
+    @Param('id', ParseIntPipe) userId: number,
   ) {
-    return {
-      photo: 'profile_photo',
-      size: profilePhoto.size,
-      path: profilePhoto.path,
-      mime: profilePhoto.mimetype,
-    };
+    return this.usersService.uploadProfilePhoto(profilePhoto, userId);
+  }
+
+  @Get(':id/retrieve/profile_photo')
+  profilePhoto(@Param('id', ParseIntPipe) userId: number) {
+    return this.usersService.profilePhoto(userId);
   }
 }
