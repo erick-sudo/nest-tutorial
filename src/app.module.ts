@@ -18,6 +18,7 @@ import { S3Module } from './s3/s3.module';
 require('aws-sdk/lib/maintenance_mode_message').suppress = true;
 
 // import { ConfigModule } from './config/config.module';
+import { FileController } from './file/file.controller';
 
 @Module({
   imports: [
@@ -73,7 +74,7 @@ require('aws-sdk/lib/maintenance_mode_message').suppress = true;
     UsersModule,
     S3Module,
   ],
-  controllers: [AppController],
+  controllers: [AppController, FileController],
   providers: [AppService],
 })
 export class AppModule {
