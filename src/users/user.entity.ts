@@ -45,4 +45,8 @@ export class User {
     newUser.email = email;
     return newUser;
   }
+
+  verifyPassword(password: string): boolean {
+    return bcrypt.compareSync(password, this.passwordDigest);
+  }
 }

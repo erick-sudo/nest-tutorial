@@ -28,3 +28,11 @@ export class CreateUser {
 export class UpdateUser extends PartialType(
   OmitType(CreateUser, ['password', 'confirmPassword', 'email'] as const),
 ) {}
+
+export class SignInDto {
+  @IsEmail({}, { message: 'invalid email address' })
+  email: string;
+
+  @IsNotEmpty({ message: 'a password is required' })
+  password: string;
+}

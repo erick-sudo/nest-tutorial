@@ -21,7 +21,8 @@ export class UsersService {
       .getRepository(ProfilePhoto)
       .createQueryBuilder('profilePhoto')
       .innerJoinAndSelect('profilePhoto.user', 'user')
-      .where('user.id = :userId', { userId }).getOne();
+      .where('user.id = :userId', { userId })
+      .getOne();
   }
 
   async uploadProfilePhoto(
@@ -64,6 +65,15 @@ export class UsersService {
         return usr;
       }
       throw new NotFoundException('User not found');
+    });
+  }
+
+  async findByEmail(email: string): Promise<User> {
+    return this.userRepository.findOneBy({ email }).then((usr) => {
+      if (usr) return usr;
+      throw new NotFoundException(
+        'User with the provided email does not exist',
+      );
     });
   }
 
