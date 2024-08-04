@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CatsModule } from './cats/cats.module';
 import { DatabaseModule } from './database/database.module';
-import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
@@ -20,7 +19,11 @@ require('aws-sdk/lib/maintenance_mode_message').suppress = true;
 // import { ConfigModule } from './config/config.module';
 import { FileController } from './file/file.controller';
 import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from './auth/auth.guard';
+import { AuthorizationModule } from './auth/authorization/authorization.module';
+import { AuthenticationModule } from './auth/authentication/authentication.module';
+import { AuthenticationGuard } from './auth/authentication/authentication.guard';
+import { AuthorizationGuard } from './auth/authorization/authorization.guard';
+import { ArticlesModule } from './articles/articles.module';
 
 @Module({
   imports: [
@@ -72,12 +75,21 @@ import { AuthGuard } from './auth/auth.guard';
     ScheduleModule.forRoot(),
     CatsModule,
     DatabaseModule,
-    AuthModule,
     UsersModule,
     S3Module,
+    AuthorizationModule,
+    AuthenticationModule,
+    ArticlesModule,
   ],
   controllers: [AppController, FileController],
-  providers: [AppService, { provide: APP_GUARD, useClass: AuthGuard }],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: AuthenticationGuard },
+    {
+      provide: APP_GUARD,
+      useClass: AuthorizationGuard,
+    },
+  ],
 })
 export class AppModule {
   // configure(consumer: MiddlewareConsumer) {

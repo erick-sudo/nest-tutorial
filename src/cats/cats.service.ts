@@ -1,27 +1,41 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateCatDto } from './dto/cat.schema';
-import { Cat } from './dto/cat.dto';
+import { CreateCatDto, ListAllEntities, UpdateCatDto } from './cat.dtos';
+import { Cat } from './cat.entity';
+import { DataSource, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class CatsService {
-  private readonly cats: Cat[] = [];
+  constructor(
+    @InjectRepository(Cat) private catRepository: Repository<Cat>,
+    private dataSource: DataSource,
+  ) {}
 
-  create(catDto: CreateCatDto) {
-    const cat = {
-      ...catDto,
-      id: this.cats.length + 1,
-    };
-    this.cats.push(cat);
-    return cat;
+  create(createCatDto: CreateCatDto) {
+    return this.catRepository.save(createCatDto);
   }
 
-  findAll(): Cat[] {
-    return this.cats;
+  async update(id: number, updateCatDto: UpdateCatDto) {
+    const cat = await this.findOne(id);
+
+    const updatedCat = this.catRepository.merge(cat, updateCatDto);
+
+    return this.catRepository.save(updatedCat);
   }
 
-  find(id: number): Cat | null {
-    const cat = this.cats.find((c) => c.id === id);
-    if (cat) return cat;
-    else throw new NotFoundException('Cat not found.');
+  async delete(id: number) {
+    const cat = await this.findOne(id);
+    this.catRepository.delete(cat.id)
+  }
+
+  async findAll(query?: ListAllEntities) {
+    return this.catRepository.find();
+  }
+
+  async findOne(id: number) {
+    return this.catRepository.findOneBy({ id }).then((cat) => {
+      if (cat) return cat;
+      else throw new NotFoundException('Cat not found.');
+    });
   }
 }

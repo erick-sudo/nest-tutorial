@@ -4,7 +4,7 @@ import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
-export class AuthService {
+export class AuthenticationService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,

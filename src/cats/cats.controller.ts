@@ -3,74 +3,68 @@ import {
   Controller,
   Delete,
   Get,
-  Header,
+  HttpCode,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   Query,
-  Res,
-  UseFilters,
-  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
-import { Response } from 'express';
 import { CatsService } from './cats.service';
-import { HttpExceptionFilter } from 'src/filters/http.exception.filter';
-import { ToIntegerPipe } from 'src/pipes/to.integer.pipe';
-import { ListAllEntities } from './dto/cat.dto';
-import { CreateCatDto, UpdateCatDto } from './dto/cat.schema';
-import { RolesGuard } from 'src/roles/roles.guard';
-import { Roles } from 'src/roles/roles.decorator';
 import { Public } from 'src/decorators/route.decorator';
+import { CreateCatDto, ListAllEntities, UpdateCatDto } from './cat.dtos';
+import { PreAuthorize } from 'src/auth/authorization/authorization.decorators';
+import { Role } from 'src/auth/authorization/role.enum';
 
 @Controller('cats')
-@Public()
-@UseGuards(RolesGuard)
-// @UseInterceptors(LoggingInterceptor)
 export class CatsController {
   constructor(private catsService: CatsService) {}
 
   @Get()
-  findAll(@Query() query: ListAllEntities): any {
-    const limit = query.limit ? [0, query.limit] : [0];
-    return this.catsService.findAll().slice(...limit);
-  }
-
-  @Get('index')
-  @Header('X-Nest', 'Tested')
-  index(@Res({ passthrough: true }) res: Response) {
-    res.status(HttpStatus.CREATED).cookie('_nest', 'nest-cookie');
-
-    return { spec: 'library-specific' };
+  @Public()
+  @PreAuthorize([Role.Admin], {
+    message: 'All cat details',
+  })
+  findAll(@Query(ValidationPipe) query: ListAllEntities): any {
+    return this.catsService.findAll(query);
   }
 
   @Get(':id')
-  @UseFilters(HttpExceptionFilter)
+  @Public()
   findOne(
-    @Param('id', ToIntegerPipe)
+    @Param('id', ParseIntPipe)
     id: number,
   ) {
-    return this.catsService.find(id);
+    return this.catsService.findOne(id);
   }
 
   @Patch(':id')
-  async update(@Param('id') id: number, @Body() updateCatDto: UpdateCatDto) {
-    return {
-      desc: `This action updates a #${id} cat`,
-      updateCatDto,
-    };
+  @PreAuthorize([Role.Admin], {
+    message: 'Insufficient privileges to update cat details',
+  })
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(ValidationPipe) updateCatDto: UpdateCatDto,
+  ) {
+    return this.catsService.update(id, updateCatDto);
   }
 
   @Post()
-  // @UsePipes(new ZodValidationPipe(createCatSchema))
-  @Roles(['nest-admin'])
+  @PreAuthorize([Role.Admin], {
+    message: 'You cannot create a cat',
+  })
   create(@Body(ValidationPipe) createCatDto: CreateCatDto) {
     return this.catsService.create(createCatDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return `This action removes a #${id} cat`;
+  @PreAuthorize([Role.Admin], {
+    message: 'Insufficient privileges to delete cats',
+  })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.catsService.delete(id);
   }
 }

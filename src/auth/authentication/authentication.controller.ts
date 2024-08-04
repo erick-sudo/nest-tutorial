@@ -1,4 +1,5 @@
 import { HttpService } from '@nestjs/axios';
+import { Request as ExpressRequest } from 'express';
 import {
   Body,
   ClassSerializerInterceptor,
@@ -13,14 +14,15 @@ import {
 import { AxiosResponse } from 'axios';
 import { Observable, map } from 'rxjs';
 import { SignInDto } from 'src/users/user.dtos';
-import { AuthService } from './auth.service';
+import { Public } from 'src/decorators/route.decorator';
+import { AuthenticationService } from './authentication.service';
 
 @Controller('auth')
 @UseInterceptors(ClassSerializerInterceptor)
-export class AuthController {
+export class AuthenticationController {
   constructor(
     private readonly httpService: HttpService,
-    private readonly authService: AuthService,
+    private readonly authenticationService: AuthenticationService,
   ) {}
 
   @Get()
@@ -31,6 +33,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Public()
   signIn(
     @Body(
       new ValidationPipe({
@@ -39,11 +42,11 @@ export class AuthController {
     )
     signInDto: SignInDto,
   ) {
-    return this.authService.signIn(signInDto);
+    return this.authenticationService.signIn(signInDto);
   }
 
   @Get('profile')
-  getProfile(@Request() req: any) {
-    return req.user;
+  getProfile(@Request() req: ExpressRequest) {
+    return req.authentication?.authorities;
   }
 }

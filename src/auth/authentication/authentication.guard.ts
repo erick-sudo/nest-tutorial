@@ -6,13 +6,69 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { jwtConstants } from './auth.constants';
 import { UsersService } from 'src/users/users.service';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from 'src/decorators/route.decorator';
+import { jwtConstants } from '../auth.constants';
+
+export class GrantedAuthority {
+  name: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  toString() {
+    return this.name;
+  }
+}
+
+export class Principal {
+  email: string;
+  id: number;
+}
+
+export class Authentication {
+  #authorities: Array<GrantedAuthority>;
+  #principal: Principal;
+
+  private constructor() {
+    this.#authorities = [];
+  }
+
+  static build(): Authentication {
+    return new Authentication();
+  }
+
+  addAuthorities(...authorities: Array<GrantedAuthority>): Authentication {
+    this.#authorities = this.#authorities.concat(authorities);
+    return this;
+  }
+
+  setPrincipal(principal: Principal): Authentication {
+    this.#principal = principal;
+    return this;
+  }
+
+  get authorities() {
+    return this.#authorities;
+  }
+
+  get principal() {
+    return this.#principal;
+  }
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      authentication?: Authentication;
+    }
+  }
+}
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class AuthenticationGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService,
@@ -59,6 +115,9 @@ export class AuthGuard implements CanActivate {
     });
 
     // Insert user details here
+    request.authentication = Authentication.build()
+      .addAuthorities(new GrantedAuthority('admin'))
+      .setPrincipal({ email: user.email, id: user.id });
 
     return true;
   }
