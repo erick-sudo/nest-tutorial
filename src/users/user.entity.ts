@@ -3,12 +3,14 @@ import {
   Column,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CreateUser } from './user.dtos';
 import * as bcrypt from 'bcrypt';
 import { ProfilePhoto } from './user.profile.photo.entity';
+import { Article } from 'src/articles/article.entity';
 
 @Entity()
 export class User {
@@ -36,6 +38,9 @@ export class User {
   })
   @JoinColumn()
   profilePhoto: ProfilePhoto;
+
+  @OneToMany(() => Article, (article) => article.author)
+  articles: Article[];
 
   static init({ firstName, lastName, password, email }: CreateUser): User {
     const newUser = new User();

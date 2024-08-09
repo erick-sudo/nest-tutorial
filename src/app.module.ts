@@ -13,10 +13,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { DataSource } from 'typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import { S3Module } from './s3/s3.module';
-
 require('aws-sdk/lib/maintenance_mode_message').suppress = true;
-
-// import { ConfigModule } from './config/config.module';
 import { FileController } from './file/file.controller';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthorizationModule } from './auth/authorization/authorization.module';
@@ -24,6 +21,11 @@ import { AuthenticationModule } from './auth/authentication/authentication.modul
 import { AuthenticationGuard } from './auth/authentication/authentication.guard';
 import { AuthorizationGuard } from './auth/authorization/authorization.guard';
 import { ArticlesModule } from './articles/articles.module';
+import { CaslModule } from './casl/casl.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -80,6 +82,18 @@ import { ArticlesModule } from './articles/articles.module';
     AuthorizationModule,
     AuthenticationModule,
     ArticlesModule,
+    CaslModule,
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      // autoSchemaFile: join(process.cwd(), 'src/gql/schema.gql')
+      typePaths: ['./**/*.graphql'],
+      definitions: {
+        path: join(process.cwd(), 'src/gql/graphql.ts'),
+        outputAs: 'class',
+      },
+      playground: false,
+      plugins: [ApolloServerPluginLandingPageLocalDefault()],
+    }),
   ],
   controllers: [AppController, FileController],
   providers: [
